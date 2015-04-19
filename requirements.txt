@@ -1,0 +1,4 @@
+node install request
+node install cheerio
+node install feedparser
+node install csv
