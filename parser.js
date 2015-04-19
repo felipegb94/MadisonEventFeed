@@ -4,6 +4,9 @@ var scraper = require('./scraper');
  
 var req = request('http://today.wisc.edu/events.rss2');
 var feedparser = new FeedParser();
+
+var events = {};
+
 req.on('error', function (error) {
   // handle any request errors 
 });
@@ -24,13 +27,20 @@ feedparser.on('readable', function() {
   var stream = this
     , meta = this.meta // **NOTE** the "meta" is always available in the context of the feedparser instance 
     , item;
- 
+
   while (item = stream.read()) {
     scraper.today(item.link);
+    //console.log(events);
+
   }
+
 });
 
-/**
+
+
+
+
+/*
 var http = require('http');
 http.createServer(function (req, res) {
   res.writeHead(200, {'Content-Type': 'text/plain'});

@@ -1,9 +1,10 @@
 var request = require('request');
 var cheerio = require('cheerio');
 var csv = require('csv');
+var jf = require('jsonfile')
 
 var link = "http://www.today.wisc.edu/events/view/85958";
-
+var counter = 0;
 eventTemplate = {'name': '',
 'date': '',
 'time': '',
@@ -24,6 +25,7 @@ eventTemplate = {'name': '',
 module.exports = {
   today: function (url) {
   	console.log("Scraping: " + url);
+    e = eventTemplate;
    		
     request(url, function(err, resp, body) {
         if (err)
@@ -31,35 +33,51 @@ module.exports = {
         $ = cheerio.load(body);
 
         // Get event title
-        eventTemplate['name'] = $('#content .span10 h1').text();
+        e['name'] = $('#content .span10 h1').text();
         
         $('#content .detail').each(function(detail){
           key = $(this).find('.span2').text();
           value = $(this).find('.span10').text();
           switch(key){
             case 'Date':
-              eventTemplate['date'] = value;
+              e['date'] = value;
               break;
             case 'Time':
-              eventTemplate['time'] = value;            
+              e['time'] = value;            
               break;
             case 'Location':
-              eventTemplate['locationAddress'] = value;              
+              e['locationAddress'] = value;              
               break;
             case 'Description':
-              eventTemplate['description'] = value;
+              e['description'] = value;
               break;
             case 'Website':
-              eventTemplate['webpage'] = value;
+              e['webpage'] = value;
               break;
             case 'Contact':
-              eventTemplate['contactPhone'] = value;             
+              var parser = csv.parse({delimiter: ', '});
+              output = [];
+              parser.on('readable', function(){
+                output = parser.read();
+              });
+              parser.write(value);
+              parser.end();
+              e['contactPhone'] = output[0];
+              e['contactEmail'] = output[1];  
+
               break;                                     
             default:
-              console.log('This Key: ' + key + ' is not needed');          
+                            //console.log('This Key: ' + key + ' is not needed');          
           }
+
         });
-        console.log(eventTemplate);
+
+        var file = 'results/event' + counter + '.json';
+        counter++;
+        jf.writeFile(file, e, function(err) {
+        console.log(err)
+        });
+        return e;
 
         // TODO: scraping goes here!
     });

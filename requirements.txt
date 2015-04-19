@@ -1,4 +1,5 @@
-node install request
-node install cheerio
-node install feedparser
-node install csv
+npm install request
+npm install cheerio
+npm install feedparser
+npm install csv
+npm install jsonfile
